@@ -1,0 +1,29 @@
+﻿{
+  "tool": "built-in image_gen",
+  "assets": [
+    {
+      "key": "piggy",
+      "source": "C:\\Users\\hp\\.codex\\generated_images\\01a10a41-54e5-7091-a04a-4b9d8a31480e\\exec-1afba322-ed38-4056-93d2-71b94dc4bd9b.png",
+      "file": "benefit-piggy-3d.webp",
+      "prompt": "Use case: stylized-concept. Asset type: 3D benefit icon for the SAKINA savings website. Subject: A cheerful mint green piggy bank with one gold coin entering its slot, savings icon. Style: polished friendly soft 3D clay render, rounded forms, pastel colors, subtle material highlights, consistent 3/4 front view. Composition: one centered isolated object, square canvas, object occupies 80 percent of canvas with safe padding, readable at 56px. Lighting: soft studio light from upper left. Background: actual transparency. Constraints: no text, no letters, no numbers, no watermark, no border, no background tile, no extra scene."
+    },
+    {
+      "key": "shield",
+      "source": "C:\\Users\\hp\\.codex\\generated_images\\01a10a41-54e5-7091-a04a-4b9d8a31480e\\exec-df27b5b7-92e4-4434-b40f-676fe76fcd6d.png",
+      "file": "benefit-shield-3d.webp",
+      "prompt": "Use case: stylized-concept. Asset type: 3D benefit icon for the SAKINA savings website. Subject: A rounded pastel blue protective shield with a raised white checkmark, trusted secure payments icon. Style: polished friendly soft 3D clay render, rounded forms, pastel colors, subtle material highlights, consistent 3/4 front view. Composition: one centered isolated object, square canvas, object occupies 80 percent of canvas with safe padding, readable at 56px. Lighting: soft studio light from upper left. Background: actual transparency. Constraints: no text, no letters, no numbers, no watermark, no border, no background tile, no extra scene."
+    },
+    {
+      "key": "basket",
+      "source": "C:\\Users\\hp\\.codex\\generated_images\\01a10a41-54e5-7091-a04a-4b9d8a31480e\\exec-b8e19fb5-eac7-4bfa-9a39-37a6571022d3.png",
+      "file": "benefit-basket-3d.webp",
+      "prompt": "Use case: stylized-concept. Asset type: 3D benefit icon for the SAKINA savings website. Subject: A warm golden wicker grocery basket with a cream rice sack, a bottle of cooking oil, green vegetables and two eggs, product choice icon. Style: polished friendly soft 3D clay render, rounded forms, pastel colors, subtle material highlights, consistent 3/4 front view. Composition: one centered isolated object, square canvas, object occupies 80 percent of canvas with safe padding, readable at 56px. Lighting: soft studio light from upper left. Background: actual transparency. Constraints: no text, no letters, no numbers, no watermark, no border, no background tile, no extra scene."
+    },
+    {
+      "key": "calendar",
+      "source": "C:\\Users\\hp\\.codex\\generated_images\\01a10a41-54e5-7091-a04a-4b9d8a31480e\\exec-dbc6d133-0945-43d4-9c01-9b055883be4a.png",
+      "file": "benefit-calendar-3d.webp",
+      "prompt": "Use case: stylized-concept. Asset type: 3D benefit icon for the SAKINA savings website. Subject: A small coral and cream desk calendar with rounded binding rings, a simple grid of embossed squares and one green checkmark, affordable monthly installments icon. Style: polished friendly soft 3D clay render, rounded forms, pastel colors, subtle material highlights, consistent 3/4 front view. Composition: one centered isolated object, square canvas, object occupies 80 percent of canvas with safe padding, readable at 56px. Lighting: soft studio light from upper left. Background: actual transparency. Constraints: no text, no letters, no numbers, no watermark, no border, no background tile, no extra scene."
+    }
+  ]
+}

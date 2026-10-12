@@ -1,0 +1,20 @@
+{
+  "generator": "built-in image_gen",
+  "assets": [
+    {
+      "path": "public/images/hero.webp",
+      "source": "public/images/hero.png",
+      "prompt": "Create a polished wide landscape 3D storybook illustration for an Indonesian goat and grocery savings website. No text, no lettering, no UI. Warm cream foreground, lush emerald grass, pastel blue sky, distant hills and wood farm fence. On the RIGHT two thirds a cheerful young Indonesian farmer wearing straw hat and green shirt affectionately holding an adorable white floppy-eared brown horned goat. At bottom right a beautiful basket of groceries: rice sack, oil bottle, eggs, leafy vegetables, tomatoes. Soft beautiful warm sunlight, charming premium Pixar-like tactile illustration, detailed friendly faces, calm rural prosperity. LEFT third mostly light cream sky and soft pale greenery and open space for website headline. Wide aspect ratio 3:2. Save as website asset."
+    },
+    {
+      "path": "public/images/goat.webp",
+      "source": "public/images/goat.png",
+      "prompt": "Wide 3:2 premium stylized 3D storybook product illustration of one adorable white Etawa goat with brown head and floppy ears, curled horns, standing side on in a lush green Indonesian pasture by wooden farm fence, warm sunny light, soft pastel blue sky, hills, no humans, no text, no lettering, beautiful friendly detailed Pixar style, centered full goat, high-end website product card image."
+    },
+    {
+      "path": "public/images/grocery.webp",
+      "source": "public/images/grocery.png",
+      "prompt": "Wide 3:2 premium stylized 3D product illustration of an Indonesian grocery hamper in a woven basket: cream rice sack, clear cooking oil bottle with golden oil, white eggs, green vegetables, tomatoes, sugar paper bag and noodles. On light warm creamy backdrop, beautiful studio sunlight, premium Pixar storybook style, no text no lettering, centered whole basket, high-end website product card image."
+    }
+  ]
+}
