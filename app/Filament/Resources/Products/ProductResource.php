@@ -8,6 +8,7 @@ use App\Filament\Resources\Products\Pages\EditProduct;
 use App\Filament\Resources\Products\Pages\ManageProducts;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\WebpImageService;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\FileUpload;
@@ -19,10 +20,15 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use UnitEnum;
 
 class ProductResource extends AdminResource
@@ -44,17 +50,17 @@ class ProductResource extends AdminResource
         return $schema->components([
             Section::make('Informasi produk')->icon('heroicon-o-cube')->description('Mulai dengan kategori, nama, dan harga produk.')->columns(['default' => 1, 'lg' => 3])->columnSpanFull()->schema([
                 Select::make('category_id')->label('Kategori')->relationship('category', 'name')->required()->searchable()->preload()->live(),
-                TextInput::make('name')->label('Nama produk')->placeholder('Contoh: Paket Sembako Keluarga')->required()->maxLength(150)->columnSpan(['default' => 1, 'lg' => 2]),
-                TextInput::make('slug')->label('Alamat produk (slug)')->placeholder('paket-sembako-keluarga')->helperText('Gunakan huruf kecil dan tanda hubung, tanpa spasi.')->required()->unique(ignoreRecord: true)->maxLength(150),
-                TextInput::make('price')->label('Harga produk')->prefix('Rp')->placeholder('250000')->integer()->minValue(1)->required(),
+                TextInput::make('name')->live(onBlur: true)->afterStateUpdated(fn (Set $set, ?string $state, ?Product $record) => $set('slug', self::generateSlug($state ?? '', $record)))->label('Nama produk')->placeholder('Contoh: Paket Sembako Keluarga')->required()->maxLength(150)->columnSpan(['default' => 1, 'lg' => 2]),
+                TextInput::make('slug')->label('Alamat produk (slug)')->placeholder('paket-sembako-keluarga')->helperText('Dibuat otomatis dari nama produk.')->disabled()->dehydrated(false),
+                TextInput::make('price')->live(onBlur: true)->label('Harga produk')->prefix('Rp')->placeholder('250.000')->integer()->type('text')->inputMode('numeric')->mask(RawJs::make("\$money(\$input, ',', '.', 0)"))->stripCharacters('.')->minValue(1)->required(),
                 TextInput::make('stock')->label('Stok tersedia')->suffix('unit')->integer()->minValue(0)->required()->default(0),
                 Textarea::make('description')->label('Deskripsi')->placeholder('Jelaskan isi, kualitas, dan informasi penting produk untuk calon anggota.')->required()->rows(3)->columnSpanFull(),
             ]),
             Section::make('Foto produk')->icon('heroicon-o-photo')->description('Unggah maksimal 5 foto, lalu pilih foto yang menjadi sampul katalog.')->columnSpanFull()->schema([
                 FileUpload::make('gallery_images')->label('Foto produk')->image()->multiple()->appendFiles()->maxFiles(5)->live()
                     ->imagePreviewHeight('140')->panelLayout('grid')->extraAttributes(['class' => 'product-photo-upload'])
-                    ->disk('public')->directory('products/gallery')->maxSize(5120)
-                    ->helperText('Maksimal 5 foto, masing-masing 5 MB. Nomor foto mengikuti urutan pada daftar upload.')
+                    ->disk('public')->directory('products/gallery')->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])->saveUploadedFileUsing(fn (TemporaryUploadedFile $file): string => app(WebpImageService::class)->store($file))->maxSize(5120)
+                    ->helperText('Maksimal 5 foto, masing-masing 5 MB. Foto otomatis disimpan sebagai WebP. Nomor foto mengikuti urutan upload.')
                     ->dehydrated(false)
                     ->loadStateFromRelationshipsUsing(function (FileUpload $component, Product $record): void {
                         $component->state(array_values(array_unique(array_filter([
@@ -102,21 +108,35 @@ class ProductResource extends AdminResource
                         TextInput::make('unit')->label('Satuan')->placeholder('kg, liter, pcs')->required()->maxLength(255),
                     ]),
                 ]),
-            Section::make('Tenor tabungan')->icon('heroicon-o-calendar-days')->description('Atur pilihan cicilan untuk produk ini. Nonaktifkan tenor yang tidak lagi ditawarkan.')->columnSpanFull()->schema([
-                Repeater::make('plans')->label('Pilihan tenor')->relationship()->columns(3)->defaultItems(0)->addActionLabel('Tambah tenor')->reorderable(false)->deletable(false)->schema([
-                    TextInput::make('name')->label('Nama tenor')->placeholder('12 bulan')->required()->maxLength(255),
-                    TextInput::make('months')->label('Durasi (bulan)')->integer()->minValue(1)->maxValue(120)->required(),
-                    TextInput::make('monthly_amount')->label('Cicilan per bulan (Rp)')->integer()->minValue(1)->helperText('Kosongkan untuk perhitungan otomatis.'),
-                    TextInput::make('down_payment')->label('Uang muka (Rp)')->integer()->minValue(0)->required()->default(0),
-                    TextInput::make('admin_fee')->label('Biaya admin (Rp)')->integer()->minValue(0)->required()->default(0),
-                    Toggle::make('is_active')->label('Tenor aktif')->default(true),
-                ]),
+            Section::make('Tenor tabungan')->icon('heroicon-o-calendar-days')->description('Tambahkan tenor, lalu simpan produk untuk menyimpan seluruh perubahan.')->columnSpanFull()->schema([
+                View::make('filament.products.tenor-editor'),
+                Repeater::make('plans')->relationship()->defaultItems(0)->deletable(false)->extraAttributes(['class' => 'tenor-data-fields'])
+                    ->mutateRelationshipDataBeforeCreateUsing(fn (array $data): array => [...$data, 'down_payment' => 0, 'monthly_amount' => null, 'financed_admin_fee' => true])
+                    ->mutateRelationshipDataBeforeSaveUsing(fn (array $data): array => [...$data, 'down_payment' => 0, 'monthly_amount' => null, 'financed_admin_fee' => true])
+                    ->schema([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('months')->integer()->minValue(1)->maxValue(120)->required(),
+                        TextInput::make('admin_fee')->integer()->stripCharacters('.')->minValue(0)->required()->default(0),
+                        Toggle::make('is_active')->default(true),
+                    ]),
             ]),
             Section::make('Pengaturan tampilan')->icon('heroicon-o-adjustments-horizontal')->description('Tentukan bagaimana produk ditampilkan kepada anggota.')->columns(2)->columnSpanFull()->schema([
                 Toggle::make('is_active')->label('Produk aktif')->helperText('Produk dapat dilihat di katalog.')->default(true),
                 Toggle::make('is_featured')->label('Produk pilihan')->helperText('Tandai sebagai produk unggulan.'),
             ]),
         ]);
+    }
+
+    public static function generateSlug(string $name, ?Product $record = null): string
+    {
+        $base = Str::slug(Str::limit($name, 130, '')) ?: 'produk';
+        $slug = $base;
+        $suffix = 2;
+        while (Product::where('slug', $slug)->when($record, fn ($query) => $query->whereKeyNot($record->getKey()))->exists()) {
+            $slug = $base.'-'.$suffix++;
+        }
+
+        return $slug;
     }
 
     public static function table(Table $table): Table

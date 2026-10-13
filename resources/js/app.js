@@ -1,5 +1,5 @@
 import Alpine from 'alpinejs';
-import { createIcons, ArrowRight, ArrowUpRight, ArrowLeft, Bell, CalendarDays, CalendarCheck, CalendarCheck2, Check, CircleCheck, CirclePlay, Eye, Gift, Heart, House, LayoutDashboard, LogIn, LogOut, MessagesSquare, PackageCheck, PiggyBank, Plus, ReceiptText, Search, SearchX, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Sprout, Target, UserRound, UserRoundPlus, Wallet, Calculator, Info, ExternalLink, Upload, FileText, Sheet } from 'lucide';
+import { createIcons, ArrowRight, ArrowUpRight, ArrowLeft, Bell, CalendarDays, CalendarCheck, CalendarCheck2, Check, CircleCheck, CirclePlay, Eye, Gift, Heart, House, LayoutDashboard, LockKeyhole, LogIn, LogOut, MessagesSquare, PackageCheck, PiggyBank, Plus, ReceiptText, Search, SearchX, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Sprout, Target, UserRound, UserRoundPlus, Wallet, Calculator, Info, ExternalLink, Upload, FileText, Sheet } from 'lucide';
 window.Alpine = Alpine;
 Alpine.data('catalogSort', (value) => ({
     open: false,
@@ -207,7 +207,7 @@ Alpine.data('adminChat', (config) => ({
     formatTime(value) { return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(value)); },
 }));
 Alpine.start();
-const appIcons = { ArrowRight, ArrowUpRight, ArrowLeft, Bell, CalendarDays, CalendarCheck, CalendarCheck2, Check, CircleCheck, CirclePlay, Eye, Gift, Heart, House, LayoutDashboard, LogIn, LogOut, MessagesSquare, PackageCheck, PiggyBank, Plus, ReceiptText, Search, SearchX, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Sprout, Target, UserRound, UserRoundPlus, Wallet, Calculator, Info, ExternalLink, Upload, FileText, Sheet };
+const appIcons = { ArrowRight, ArrowUpRight, ArrowLeft, Bell, CalendarDays, CalendarCheck, CalendarCheck2, Check, CircleCheck, CirclePlay, Eye, Gift, Heart, House, LayoutDashboard, LockKeyhole, LogIn, LogOut, MessagesSquare, PackageCheck, PiggyBank, Plus, ReceiptText, Search, SearchX, ShieldCheck, ShoppingBag, ShoppingBasket, ShoppingCart, Sprout, Target, UserRound, UserRoundPlus, Wallet, Calculator, Info, ExternalLink, Upload, FileText, Sheet };
 createIcons({ icons: appIcons, attrs: { class: 'icon' } });
 if ('serviceWorker' in navigator) {
 window.addEventListener('load',()=>navigator.serviceWorker.register('/sw.js').catch(()=>{}));

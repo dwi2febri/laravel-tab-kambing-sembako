@@ -57,8 +57,11 @@ class ProductManagementTest extends TestCase
         $product = Product::where('slug', 'paket-keluarga')->firstOrFail();
         $this->assertCount(2, $product->images);
         Storage::disk('public')->assertExists($product->thumbnail);
+        $this->assertStringEndsWith('.webp', $product->thumbnail);
+        $this->assertSame('image/webp', Storage::disk('public')->mimeType($product->thumbnail));
         foreach ($product->images as $image) {
             Storage::disk('public')->assertExists($image->path);
+            $this->assertSame('image/webp', Storage::disk('public')->mimeType($image->path));
         }
         $this->assertSame([0, 1], $product->images->pluck('sort_order')->all());
         $this->assertSame('Beras', $product->items->sole()->item_name);
@@ -144,6 +147,61 @@ class ProductManagementTest extends TestCase
             ->set('data.gallery_images', [])->call('save')->assertHasNoFormErrors();
         $this->assertNull($product->fresh()->thumbnail);
         $this->assertSame(0, $product->images()->count());
+    }
+
+    public function test_slug_is_generated_and_rupiah_separators_are_removed(): void
+    {
+        $category = Category::factory()->create();
+        Product::factory()->create(['slug' => 'kambing-pilihan']);
+        Livewire::test(CreateProduct::class)->fillForm([
+            'category_id' => $category->id, 'name' => 'Kambing Pilihan', 'slug' => 'manipulasi',
+            'description' => 'Sehat', 'price' => '2.500.000', 'stock' => 1,
+            'plans' => [['name' => '12 bulan', 'months' => 12, 'monthly_amount' => '200.000', 'down_payment' => '100.000', 'admin_fee' => '15.000', 'is_active' => true]],
+        ])->assertFormFieldIsDisabled('slug')->call('create')->assertHasNoFormErrors();
+        $product = Product::where('slug', 'kambing-pilihan-2')->firstOrFail();
+        $this->assertEquals(2500000, $product->price);
+        $this->assertNull($product->plans->sole()->monthly_amount);
+        $this->assertSame(209584, $product->plans->sole()->monthlyAmount());
+        $this->assertEquals(0, $product->plans->sole()->down_payment);
+        $this->assertEquals(15000, $product->plans->sole()->admin_fee);
+        Livewire::test(EditProduct::class, ['record' => $product->id])
+            ->fillForm(['name' => 'Kambing Baru', 'slug' => 'manual', 'price' => '3.000.000'])
+            ->call('save')->assertHasNoFormErrors();
+        $this->assertSame('kambing-baru', $product->fresh()->slug);
+        $this->assertEquals(3000000, $product->fresh()->price);
+    }
+
+    public function test_rupiah_mask_is_rendered_as_a_complete_html_attribute(): void
+    {
+        $response = $this->get('/admin/products/create')->assertOk();
+        $document = new \DOMDocument;
+        $previous = libxml_use_internal_errors(true);
+        $document->loadHTML($response->getContent());
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+        $price = (new \DOMXPath($document))->query("//input[@placeholder='250.000']")->item(0);
+        $this->assertNotNull($price);
+        $this->assertSame("\$money(\$input, ',', '.', 0)", $price->getAttribute('x-mask:dynamic'));
+        $this->assertSame('text', $price->getAttribute('type'));
+    }
+
+    public function test_tenor_editor_adds_edits_and_validates_rows(): void
+    {
+        $page = Livewire::test(CreateProduct::class)->fillForm([
+            'category_id' => Category::factory()->create()->id, 'name' => 'Produk tenor',
+            'description' => 'Produk', 'price' => 1000000, 'stock' => 1,
+        ])->set('tenorDraft.months', 0)->call('saveTenor')->assertHasErrors(['tenorDraft.months'])
+            ->set('tenorDraft.months', 3)->set('tenorDraft.admin_fee', '20.000')
+            ->call('saveTenor')->assertHasNoErrors();
+        $key = array_key_first($page->get('data.plans'));
+        $page->call('editTenor', $key)->set('tenorDraft.months', 6)->call('saveTenor')
+            ->call('create')->assertHasNoFormErrors();
+        $plan = Product::where('slug', 'produk-tenor')->firstOrFail()->plans->sole();
+        $this->assertEquals(6, $plan->months);
+        $this->assertEquals(20000, $plan->admin_fee);
+        $this->assertEquals(0, $plan->down_payment);
+        $this->assertTrue((bool) $plan->financed_admin_fee);
+        $this->assertSame(170000, $plan->monthlyAmount());
     }
 
     public function test_members_cannot_access_product_input_pages(): void

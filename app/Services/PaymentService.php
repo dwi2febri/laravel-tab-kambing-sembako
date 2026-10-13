@@ -17,7 +17,9 @@ class PaymentService
 {
     public function submit(User $user, Installment $installment, int $methodId, UploadedFile $proof, ?string $note): Payment
     {
-        $path = $proof->store('payment-proofs', 'local');
+        $path = in_array($proof->getMimeType(), ['image/jpeg', 'image/png', 'image/webp'])
+            ? app(WebpImageService::class)->store($proof, 'local', 'payment-proofs')
+            : $proof->store('payment-proofs', 'local');
         try {
             return DB::transaction(function () use ($user, $installment, $methodId, $path, $note) {
                 $saving = UserSaving::lockForUpdate()->findOrFail($installment->user_saving_id);
@@ -65,7 +67,9 @@ class PaymentService
                 $payment->update(['status' => 'approved', 'approved_by' => $admin->id, 'approved_at' => now()]);
                 $installment->update(['status' => 'paid', 'paid_amount' => $installment->amount, 'paid_at' => now()]);
                 $total = (int) $saving->payments()->where('status', 'approved')->sum('amount');
-                $productPaid = max(0, $total - ($saving->installments()->where('installment_number', 0)->where('status', 'paid')->exists() ? $saving->admin_fee_snapshot : 0));
+                $upfront = $saving->installments()->where('installment_number', 0)->first();
+                $feePaid = $upfront ? ($upfront->status === 'paid' ? $saving->admin_fee_snapshot : 0) : min($total, $saving->admin_fee_snapshot);
+                $productPaid = max(0, $total - $feePaid);
                 $lunas = $productPaid >= $saving->product_price_snapshot;
                 $saving->update(['total_paid' => $productPaid, 'remaining_amount' => max(0, $saving->product_price_snapshot - $productPaid), 'status' => $lunas ? 'paid' : 'active']);
                 SavingService::notify($saving->user_id, 'payment', 'Pembayaran disetujui', 'Pembayaran cicilan #'.$installment->installment_number.' telah masuk ke tabungan.');

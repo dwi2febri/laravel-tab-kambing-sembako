@@ -1,16 +1,43 @@
 <div wire:poll.10s>
     <x-filament::modal id="admin-notification-popup" width="2xl" teleport="body" sticky-header>
         <x-slot name="trigger">
-            <button type="button" class="admin-notification-bell" aria-label="Notifikasi, {{ $unreadCount }} belum dibaca" title="Notifikasi">
+            <button type="button" class="admin-notification-bell" aria-label="Notifikasi, {{ $actionCount }} perlu ditindaklanjuti, {{ $unreadCount }} riwayat belum dibaca" title="Notifikasi">
                 <x-heroicon-o-bell />
-                @if($unreadCount > 0)
-                    <span class="admin-notification-count">{{ $unreadCount > 99 ? '99+' : $unreadCount }}</span>
+                @if($actionCount > 0 || $unreadCount > 0)
+                    <span class="admin-notification-count">{{ ($actionCount ?: $unreadCount) > 99 ? '99+' : ($actionCount ?: $unreadCount) }}</span>
                 @endif
             </button>
         </x-slot>
         <x-slot name="heading">Notifikasi</x-slot>
-        <x-slot name="description">{{ $unreadCount }} notifikasi belum dibaca</x-slot>
+        <x-slot name="description">{{ $actionCount }} perlu ditindaklanjuti</x-slot>
         <div class="admin-notification-popup">
+            <div class="admin-notification-menu-list">
+                @foreach($menus as $menu)
+                    <div wire:key="notification-menu-{{ $menu['key'] }}">
+                        <button type="button" wire:click="toggleMenu('{{ $menu['key'] }}')" class="admin-notification-menu" aria-expanded="{{ $expandedMenu === $menu['key'] ? 'true' : 'false' }}" aria-controls="notification-details-{{ $menu['key'] }}">
+                            <span>{{ $menu['label'] }}</span>
+                            <span class="admin-notification-menu-end"><span class="admin-notification-new">{{ $menu['count'] }}</span><x-heroicon-o-chevron-down class="admin-notification-chevron" /></span>
+                        </button>
+                        @if($expandedMenu === $menu['key'])
+                            <div id="notification-details-{{ $menu['key'] }}" class="admin-notification-queue">
+                                @forelse($queueDetails as $detail)
+                                    <article wire:key="queue-{{ $menu['key'] }}-{{ $detail['id'] }}" class="admin-notification-item">
+                                        <h3>{{ $detail['title'] }}</h3>
+                                        <p>{{ $detail['message'] }}</p>
+                                        <div class="admin-notification-item-actions"><x-filament::button tag="a" :href="$detail['url']" size="sm" color="gray">Lihat detail</x-filament::button></div>
+                                    </article>
+                                @empty
+                                    <p class="admin-notification-history-heading">Tidak ada antrean pada menu ini.</p>
+                                @endforelse
+                                @if($menu['count'] > 10)
+                                    <x-filament::button tag="a" :href="$menu['url']" size="sm">Lihat semua {{ $menu['count'] }} antrean</x-filament::button>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+            <p class="admin-notification-history-heading">Riwayat aktivitas &middot; {{ $unreadCount }} belum dibaca</p>
             @if($unreadCount > 0)
                 <x-filament::button color="gray" size="sm" wire:click="markAllRead">Tandai semua dibaca</x-filament::button>
             @endif
@@ -37,7 +64,7 @@
                 @empty
                     <div class="admin-notification-empty">
                         <x-heroicon-o-bell />
-                        <h3>Belum ada notifikasi</h3>
+                        <h3>Belum ada riwayat aktivitas</h3>
                         <p>Aktivitas pembayaran, tabungan, dan serah terima baru akan muncul di sini.</p>
                     </div>
                 @endforelse

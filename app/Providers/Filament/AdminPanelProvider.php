@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use Filament\Auth\Pages\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -29,8 +30,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->renderHook(PanelsRenderHook::SIMPLE_PAGE_START, fn (): View => view('filament.login-art'), scopes: Login::class)
+            ->renderHook(PanelsRenderHook::AUTH_LOGIN_FORM_AFTER, fn (): View => view('filament.login-footer'), scopes: Login::class)
             ->brandName('SAKINA')
-            ->brandLogo(asset('images/sakina-logo.png'))
+            ->brandLogo(asset('images/sakina-logo.webp'))
             ->brandLogoHeight('3.5rem')
             ->favicon(asset('images/icon.svg'))
             ->viteTheme('resources/css/admin.css')

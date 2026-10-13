@@ -12,6 +12,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
+use Filament\Support\RawJs;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -36,7 +37,7 @@ class SavingPlanResource extends AdminResource
 
     public static function form(Schema $schema): Schema
     {
-        return $schema->components([Select::make('product_id')->label('Produk')->relationship('product', 'name')->searchable()->preload()->required(), TextInput::make('name')->label('Nama tenor')->required(), TextInput::make('months')->label('Jumlah bulan')->numeric()->minValue(1)->maxValue(120)->required(), TextInput::make('monthly_amount')->label('Cicilan bulanan (Rp)')->numeric()->minValue(1)->helperText('Kosongkan untuk perhitungan otomatis. Cicilan terakhir menyesuaikan sisa harga.'), TextInput::make('down_payment')->label('Uang muka (Rp)')->numeric()->minValue(0)->required()->default(0), TextInput::make('admin_fee')->label('Biaya admin (Rp)')->numeric()->minValue(0)->required()->default(0), Toggle::make('is_active')->label('Aktif')->default(true)]);
+        return $schema->components([Select::make('product_id')->label('Produk')->relationship('product', 'name')->searchable()->preload()->required(), TextInput::make('name')->label('Nama tenor')->required(), TextInput::make('months')->label('Jumlah bulan')->numeric()->minValue(1)->maxValue(120)->required(), TextInput::make('monthly_amount')->label('Cicilan bulanan (Rp)')->integer()->type('text')->inputMode('numeric')->mask(RawJs::make("\$money(\$input, ',', '.', 0)"))->stripCharacters('.')->minValue(1)->helperText('Kosongkan untuk perhitungan otomatis. Cicilan terakhir menyesuaikan sisa harga.'), TextInput::make('down_payment')->label('Uang muka (Rp)')->integer()->type('text')->inputMode('numeric')->mask(RawJs::make("\$money(\$input, ',', '.', 0)"))->stripCharacters('.')->minValue(0)->required()->default(0), TextInput::make('admin_fee')->label('Biaya admin (Rp)')->integer()->type('text')->inputMode('numeric')->mask(RawJs::make("\$money(\$input, ',', '.', 0)"))->stripCharacters('.')->minValue(0)->required()->default(0), Toggle::make('is_active')->label('Aktif')->default(true)]);
     }
 
     public static function table(Table $table): Table

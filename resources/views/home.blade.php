@@ -14,7 +14,7 @@
             <p>Tak perlu menunggu nanti. Mulai perjalanan menabung Anda hari ini.</p>
         </div>
         <div class="cta-art" aria-hidden="true">
-            <img class="cta-illustration" src="{{ asset('images/cta-goat-grocery.png') }}" alt="" width="1280" height="1280" loading="lazy">
+            <img class="cta-illustration" src="{{ asset('images/cta-goat-grocery.webp') }}" alt="" width="1280" height="1280" loading="lazy">
         </div>
         <div class="cta-actions">
             <a href="{{ route('register') }}" class="btn">Mulai Menabung <i data-lucide="arrow-up-right"></i></a>

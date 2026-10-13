@@ -19,6 +19,10 @@ class SavingPlan extends Model
 
     public function monthlyAmount(): int
     {
+        if ($this->financed_admin_fee) {
+            return (int) ceil(($this->product->price + $this->admin_fee) / max(1, $this->months));
+        }
+
         return $this->monthly_amount ?? (int) ceil(($this->product->price - $this->down_payment) / $this->months);
     }
 }

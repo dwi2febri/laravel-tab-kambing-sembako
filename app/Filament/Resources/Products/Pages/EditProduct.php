@@ -8,9 +8,18 @@ use Filament\Resources\Pages\EditRecord;
 
 class EditProduct extends EditRecord
 {
+    use ManagesProductTenors;
+
     protected static string $resource = ProductResource::class;
 
     protected ?bool $hasDatabaseTransactions = true;
+
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['slug'] = ProductResource::generateSlug($data['name'], $this->record);
+
+        return $data;
+    }
 
     protected function afterSave(): void
     {

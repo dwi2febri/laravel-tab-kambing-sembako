@@ -6,6 +6,7 @@ use App\Filament\Pages\AdminNotifications;
 use App\Filament\Resources\Handovers\HandoverResource;
 use App\Livewire\AdminNotificationBell;
 use App\Models\Handover;
+use App\Models\Payment;
 use App\Models\User;
 use App\Services\SavingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +52,26 @@ class AdminNotificationsTest extends TestCase
         $this->assertNull($other->memberNotifications()->first()->read_at);
         Livewire::test(AdminNotificationBell::class)
             ->call('markRead', $other->memberNotifications()->first()->id)->assertNotFound();
+    }
+
+    public function test_popup_shows_existing_menu_queues_without_notification_history(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $payments = Payment::factory()->count(2)->create(['status' => 'pending']);
+        Handover::factory()->create(['status' => 'requested']);
+        $popup = Livewire::test(AdminNotificationBell::class)
+            ->assertViewHas('actionCount', 3)->assertViewHas('unreadCount', 0)
+            ->assertSee('Konfirmasi Pembayaran')->assertSee('Serah Terima')
+            ->assertSee('3 perlu ditindaklanjuti')
+            ->call('toggleMenu', 'payment')->assertSet('expandedMenu', 'payment')
+            ->assertViewHas('queueDetails', fn (array $details): bool => count($details) === 2)
+            ->call('toggleMenu', 'handover')->assertSet('expandedMenu', 'handover')
+            ->assertViewHas('queueDetails', fn (array $details): bool => count($details) === 1)
+            ->call('toggleMenu', 'chat')->assertSee('Tidak ada antrean pada menu ini.')
+            ->call('toggleMenu', 'chat')->assertSet('expandedMenu', null);
+        $popup->call('markAllRead')->assertViewHas('actionCount', 3);
+        $payments->first()->update(['status' => 'approved']);
+        $popup->call('$refresh')->assertViewHas('actionCount', 2);
     }
 
     public function test_handover_badge_counts_only_unfinished_records(): void

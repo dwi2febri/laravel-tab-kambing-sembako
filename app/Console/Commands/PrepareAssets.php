@@ -36,7 +36,7 @@ class PrepareAssets extends Command
             imagefilledpolygon($im, [(int) ($size * .67), (int) ($size * .36), (int) ($size * .73), (int) ($size * .23), (int) ($size * .54), (int) ($size * .33)], $gold);
             imagefilledellipse($im, (int) ($size * .39), (int) ($size * .52), (int) ($size * .04), (int) ($size * .04), $green);
             imagefilledellipse($im, (int) ($size * .61), (int) ($size * .52), (int) ($size * .04), (int) ($size * .04), $green);
-            imagepng($im,public_path('images/pwa-'.$size.'.png'));
+            imagewebp($im, public_path('images/pwa-'.$size.'.webp'), 88);
             imagedestroy($im);
         }
         $this->info('Assets WebP dan ikon PWA siap.');

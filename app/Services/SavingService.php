@@ -25,12 +25,12 @@ class SavingService
                 throw ValidationException::withMessages(['saving_plan_id' => 'Konfigurasi tenor tidak valid.']);
             }
             $monthly = $plan->monthlyAmount();
-            $remaining = $product->price - $plan->down_payment;
+            $remaining = $plan->financed_admin_fee ? $product->price + $plan->admin_fee : $product->price - $plan->down_payment;
             if ($monthly < 1 || $monthly * ($plan->months - 1) >= $remaining) {
                 throw ValidationException::withMessages(['saving_plan_id' => 'Nominal cicilan tidak sesuai harga dan tenor.']);
             }
             $saving = UserSaving::create(['user_id' => $user->id, 'product_id' => $product->id, 'saving_plan_id' => $plan->id, 'product_name_snapshot' => $product->name, 'product_price_snapshot' => $product->price, 'tenor_snapshot' => $plan->months, 'monthly_amount_snapshot' => $monthly, 'down_payment_snapshot' => $plan->down_payment, 'admin_fee_snapshot' => $plan->admin_fee, 'total_paid' => 0, 'remaining_amount' => $product->price, 'start_date' => today(), 'estimated_end_date' => today()->addMonthsNoOverflow($plan->months), 'status' => 'active']);
-            if ($plan->down_payment + $plan->admin_fee > 0) {
+            if (! $plan->financed_admin_fee && $plan->down_payment + $plan->admin_fee > 0) {
                 $saving->installments()->create(['installment_number' => 0, 'due_date' => today(), 'amount' => $plan->down_payment + $plan->admin_fee]);
             }
             for ($i = 1; $i <= $plan->months; $i++) {

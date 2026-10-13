@@ -61,6 +61,7 @@ class SavingsFlowTest extends TestCase
 
     public function test_public_pages_and_product_filters_render(): void
     {
+        $this->get('/admin/login')->assertOk()->assertSee('Kelola tabungan.')->assertSee('data.email')->assertSee('data.password');
         foreach (['home', 'catalog', 'login', 'register', 'password.request', 'about', 'terms'] as $route) {
             $this->get(route($route))->assertOk();
         }
@@ -116,6 +117,7 @@ class SavingsFlowTest extends TestCase
         $this->assertSame('pending', $payment->status);
         $this->assertSame(0, $saving->fresh()->total_paid);
         Storage::disk('local')->assertExists($payment->proof_path);
+        $this->assertSame('image/webp', Storage::disk('local')->mimeType($payment->proof_path));
         $this->post(route('payments.store', $installment), ['payment_method_id' => $this->method->id, 'proof' => UploadedFile::fake()->image('bukti.png')])->assertSessionHasErrors('proof');
         $this->assertDatabaseCount('payments', 1);
     }
@@ -210,6 +212,23 @@ class SavingsFlowTest extends TestCase
         }
         $this->assertDatabaseHas('notifications', ['user_id' => $this->member->id, 'title' => 'Pengajuan serah terima diterima']);
 
+    }
+
+    public function test_financed_admin_fee_is_paid_in_monthly_installments_without_upfront_payment(): void
+    {
+        $this->product->update(['price' => 1000000]);
+        $this->plan->update(['months' => 3, 'admin_fee' => 20000, 'down_payment' => 0, 'monthly_amount' => null, 'financed_admin_fee' => true]);
+        $saving = $this->start();
+        $this->assertCount(3, $saving->installments);
+        $this->assertSame(1020000, (int) $saving->installments->sum('amount'));
+        $this->assertSame(340000, $saving->monthly_amount_snapshot);
+        $this->assertFalse($saving->installments()->where('installment_number', 0)->exists());
+        foreach ($saving->installments as $installment) {
+            app(PaymentService::class)->review($this->admin, $this->submit($installment), true);
+        }
+        $this->assertSame('paid', $saving->fresh()->status);
+        $this->assertSame(1000000, $saving->fresh()->total_paid);
+        $this->assertSame(0, $saving->fresh()->remaining_amount);
     }
 
     public function test_down_payment_and_admin_fee_do_not_inflate_progress(): void

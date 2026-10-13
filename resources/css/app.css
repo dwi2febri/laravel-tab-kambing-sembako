@@ -429,3 +429,78 @@ html { scroll-behavior:auto; }
 .saving-detail-layout aside .flex { flex-wrap:wrap; gap:8px; }
 @media(min-width:1024px) { .saving-detail-layout { grid-template-columns:minmax(0,1fr) 300px; } }
 @media(max-width:640px) { .saving-detail-layout .card { padding:20px; } }
+
+/* Member authentication pages. */
+.member-auth-page { background:#fff; padding:1.75rem 0 4rem; }
+.member-auth-breadcrumb { display:flex; align-items:center; gap:.875rem; font-size:.8125rem; color:#85958b; margin-bottom:2.5rem; }
+.member-auth-breadcrumb a { color:#087f52; }
+.member-auth.auth-grid { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:3.5rem; min-height:0; align-items:center; max-width:1200px; }
+.member-auth .auth-art { background:#fff; overflow:visible; min-width:0; display:flex; flex-direction:column; padding:1rem 0; }
+.member-auth-intro { position:relative; z-index:1; padding:0 1.25rem; }
+.member-auth-intro h2 { font-size:clamp(2rem,3.7vw,3.5rem); line-height:1.15; letter-spacing:-.045em; color:#174737; margin:1.125rem 0; }
+.member-auth-intro > p { color:#7a8e80; font-size:1rem; line-height:1.8; max-width:32rem; }
+.member-auth-trust { display:flex; align-items:flex-start; gap:.75rem; color:#5e7a67; font-size:.8125rem; line-height:1.7; margin:1.5rem 0 0; }
+.member-auth-trust svg { width:1.375rem; height:1.375rem; color:#087f52; flex-shrink:0; }
+.member-auth .auth-art img { position:static; display:block; width:100%; height:auto; object-fit:contain; margin-top:1rem; }
+.member-auth .auth-form { max-width:none; min-width:0; margin:0; padding:2.5rem; border:1px solid #dce8de; border-radius:1.5rem; background:#fff; box-shadow:0 18px 55px #164c3a08; }
+.member-auth .auth-form h1 { font-size:1.875rem; line-height:1.25; margin-bottom:.625rem; }
+.member-auth .auth-form > p { font-size:.875rem; line-height:1.7; margin-bottom:1.75rem; }
+.member-auth .field input { background:#fafcf9; min-height:3.25rem; border-color:#d6e5d8; }
+.member-auth .field input:focus { outline:2px solid #087f52; outline-offset:2px; }
+.member-auth .auth-form .member-auth-switch { margin:1.75rem 0 0; padding-top:1.5rem; border-top:1px solid #e5ece6; text-align:center; color:#7a8e80; font-size:.8125rem; }
+.member-auth-switch a { color:#087f52; font-weight:700; }
+@media(max-width:1023px) {
+ .member-auth.auth-grid { gap:2rem; grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .member-auth .auth-form { padding:1.75rem; }
+}
+@media(max-width:768px) {
+ .member-auth-page { padding:1.25rem 0 6rem; }
+ .member-auth-breadcrumb { margin-bottom:1.5rem; }
+ .member-auth.auth-grid { grid-template-columns:minmax(0,1fr); gap:1.5rem; max-width:500px; }
+ .member-auth .auth-art { display:block; padding:0; }
+ .member-auth-intro { padding:0; }
+ .member-auth-intro h2 { font-size:1.875rem; }
+ .member-auth-intro > p { font-size:.875rem; }
+ .member-auth .auth-art img { max-width:280px; margin:.5rem auto 0; }
+ .member-auth-trust { display:none; }
+ .member-auth .auth-form { padding:1.5rem; border-radius:1.125rem; }
+ .member-auth .auth-form h1 { font-size:1.5rem; }
+}
+
+/* Compact authentication layout sized for the available screen height. */
+body:has(.member-auth-page) .nav-inner { height:64px; }
+body:has(.member-auth-page) .public-nav .sakina-logo { width:145px; height:56px; object-fit:contain; }
+body:has(.member-auth-page) .nav-actions .btn { min-height:38px; padding:8px 18px; }
+.member-auth-page { padding:12px 0 20px; min-height:calc(100dvh - 65px); }
+.member-auth-breadcrumb { font-size:12px; margin-bottom:12px; }
+.member-auth.auth-grid { max-width:1000px; gap:32px; }
+.member-auth .auth-art { padding:0; }
+.member-auth-intro { padding:0 12px; }
+.member-auth-intro h2 { font-size:clamp(26px,2.7vw,36px); margin:12px 0; }
+.member-auth-intro > p { font-size:13px; line-height:1.65; }
+.member-auth-trust { font-size:11px; margin-top:14px; gap:8px; }
+.member-auth .auth-art img { max-height:clamp(150px,36dvh,300px); margin-top:12px; }
+.member-auth .auth-form { padding:22px 26px; border-radius:20px; }
+.member-auth .auth-form > .icon-box { width:36px; height:36px; margin-bottom:12px; }
+.member-auth .auth-form h1 { font-size:24px; margin-bottom:6px; }
+.member-auth .auth-form > p { font-size:12px; margin-bottom:18px; line-height:1.6; }
+.member-auth .field { margin-bottom:12px; }
+.member-auth .field label { font-size:12px; margin-bottom:6px; }
+.member-auth .field input { min-height:42px; padding:10px 12px; font-size:13px; }
+.member-auth .auth-form form > .mb-6 { margin-bottom:14px; }
+.member-auth .auth-form .btn { min-height:42px; padding:10px 18px; }
+.member-auth .auth-form .member-auth-switch { margin-top:16px; padding-top:14px; font-size:12px; }
+@media(min-width:769px) {
+ .member-auth.auth-grid { min-height:calc(100dvh - 124px); }
+ .member-auth form:has(#name) { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:12px; }
+ .member-auth form:has(#name) > :not(.field),.member-auth form:has(#name) > .field:has(#email) { grid-column:1 / -1; }
+}
+@media(max-width:768px) {
+ .member-auth-page { padding-bottom:24px; }
+ .member-auth.auth-grid { gap:18px; }
+ .member-auth .auth-art img,.member-auth-intro > p,.member-auth-intro .eyebrow { display:none; }
+ .member-auth-intro h2 { font-size:24px; margin:0; }
+ .member-auth .auth-form { padding:20px; }
+}
+
+.member-auth .auth-art img { border-radius:18px; }
