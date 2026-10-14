@@ -38,7 +38,7 @@ class Reports extends Page
     {
         return match ($this->type) {
             'products', 'users' => ['active' => 'Aktif', 'inactive' => 'Tidak aktif'],
-            'savings' => ['active' => 'Belum lunas', 'paid' => 'Lunas', 'handover_requested' => 'Pengajuan serah terima', 'handover_scheduled' => 'Serah terima dijadwalkan', 'completed' => 'Selesai'],
+            'savings' => ['active' => 'Belum lunas', 'paid' => 'Lunas', 'handover_requested' => 'Pengajuan serah terima', 'handover_scheduled' => 'Proses Penyerahan', 'completed' => 'Selesai'],
             'handovers' => ['requested' => 'Diajukan', 'scheduled' => 'Dijadwalkan', 'completed' => 'Selesai'],
             default => ['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'],
         };

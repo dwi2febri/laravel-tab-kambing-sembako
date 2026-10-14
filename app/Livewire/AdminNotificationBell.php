@@ -11,6 +11,8 @@ use App\Models\Payment;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -19,6 +21,39 @@ class AdminNotificationBell extends Component
     use WithPagination;
 
     public ?string $expandedMenu = null;
+
+    #[Locked]
+    public string $navigationFingerprint = '';
+
+    public function mount(): void
+    {
+        Gate::authorize('admin');
+        $this->navigationFingerprint = json_encode($this->notificationCounts);
+    }
+
+    /** @return array{payment: int, handover: int, chat: int, unread: int} */
+    #[Computed]
+    public function notificationCounts(): array
+    {
+        Gate::authorize('admin');
+
+        return [
+            'payment' => (int) PaymentResource::getNavigationBadge(),
+            'handover' => (int) HandoverResource::getNavigationBadge(),
+            'chat' => (int) ChatInbox::getNavigationBadge(),
+            'unread' => auth()->user()->memberNotifications()->whereNull('read_at')->count(),
+        ];
+    }
+
+    public function syncNotifications(): void
+    {
+        Gate::authorize('admin');
+        $fingerprint = json_encode($this->notificationCounts);
+        if ($fingerprint !== $this->navigationFingerprint) {
+            $this->navigationFingerprint = $fingerprint;
+            $this->dispatch('refresh-sidebar');
+        }
+    }
 
     public function toggleMenu(string $menu): void
     {
@@ -39,8 +74,8 @@ class AdminNotificationBell extends Component
             'handover' => Handover::with('userSaving.user')->whereIn('status', ['requested', 'scheduled'])->oldest()->limit(10)->get()->map(fn ($handover): array => [
                 'id' => $handover->id,
                 'title' => $handover->userSaving->user->name,
-                'message' => $handover->userSaving->product_name_snapshot.' - '.($handover->status === 'requested' ? 'Menunggu jadwal' : 'Menunggu penyerahan').'. Penerima: '.$handover->recipient_name,
-                'url' => HandoverResource::getUrl(),
+                'message' => $handover->userSaving->product_name_snapshot.' - '.($handover->status === 'requested' ? 'Menunggu konfirmasi' : 'Proses penyerahan').'. Penerima: '.$handover->recipient_name,
+                'url' => HandoverResource::getUrl('view', ['record' => $handover]),
             ])->all(),
             'chat' => ChatMessage::with('conversation.user')->where('is_admin', false)->whereNull('read_at')->oldest()->limit(10)->get()->map(fn ($message): array => [
                 'id' => $message->id,
@@ -68,10 +103,11 @@ class AdminNotificationBell extends Component
     {
         Gate::authorize('admin');
 
+        $counts = $this->notificationCounts;
         $menus = [
-            ['key' => 'payment', 'label' => 'Konfirmasi Pembayaran', 'count' => (int) PaymentResource::getNavigationBadge(), 'url' => PaymentResource::getUrl()],
-            ['key' => 'handover', 'label' => 'Serah Terima', 'count' => (int) HandoverResource::getNavigationBadge(), 'url' => HandoverResource::getUrl()],
-            ['key' => 'chat', 'label' => 'Chat Anggota & Pengunjung', 'count' => (int) ChatInbox::getNavigationBadge(), 'url' => ChatInbox::getUrl()],
+            ['key' => 'payment', 'label' => 'Konfirmasi Pembayaran', 'count' => $counts['payment'], 'url' => PaymentResource::getUrl()],
+            ['key' => 'handover', 'label' => 'Serah Terima', 'count' => $counts['handover'], 'url' => HandoverResource::getUrl()],
+            ['key' => 'chat', 'label' => 'Chat Anggota & Pengunjung', 'count' => $counts['chat'], 'url' => ChatInbox::getUrl()],
         ];
 
         return view('livewire.admin-notification-bell', [
@@ -79,7 +115,7 @@ class AdminNotificationBell extends Component
             'queueDetails' => $this->queueDetails(),
             'actionCount' => array_sum(array_column($menus, 'count')),
             'notifications' => auth()->user()->memberNotifications()->latest('id')->paginate(10, pageName: 'notificationPage'),
-            'unreadCount' => auth()->user()->memberNotifications()->whereNull('read_at')->count(),
+            'unreadCount' => $counts['unread'],
         ]);
     }
 }

@@ -11,6 +11,10 @@ class Dashboard extends BaseDashboard
 {
     use HasFilters;
 
+    protected static ?string $title = 'Dashboard';
+
+    protected static ?string $navigationLabel = 'Dashboard';
+
     public ?string $dateFrom = null;
 
     public ?string $dateTo = null;
@@ -25,6 +29,7 @@ class Dashboard extends BaseDashboard
     public function content(Schema $schema): Schema
     {
         return $schema->components([
+            View::make('filament.pages.dashboard-welcome'),
             View::make('filament.pages.dashboard-date-filter'),
             $this->getWidgetsContentComponent(),
         ]);

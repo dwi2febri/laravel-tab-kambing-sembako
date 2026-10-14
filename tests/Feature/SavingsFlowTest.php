@@ -193,7 +193,7 @@ class SavingsFlowTest extends TestCase
     {
         $saving = $this->start();
         $service = app(HandoverService::class);
-        $this->actingAs($this->member)->post(route('handovers.request', $saving), ['recipient_name' => 'Andi'])->assertSessionHasErrors('handover');
+        $this->actingAs($this->member)->post(route('handovers.request', $saving), ['recipient_name' => 'Andi', 'preferred_at' => now()->addDay()->format('Y-m-d\TH:i'), 'location' => 'Semarang', 'latitude' => -6.9667, 'longitude' => 110.4167])->assertSessionHasErrors('handover');
         foreach ($saving->installments as $i) {
             app(PaymentService::class)->review($this->admin, $this->submit($i), true);
         }
@@ -204,7 +204,7 @@ class SavingsFlowTest extends TestCase
         $this->assertSame('handover_requested', $saving->fresh()->status);
         $service->schedule($this->admin, $h, now()->addDay()->toDateTimeString(), 'Kantor Semarang');
         $this->assertSame('handover_scheduled', $saving->fresh()->status);
-        $service->complete($this->admin, $h);
+        $service->complete($this->member, $h);
         $this->assertSame('completed', $saving->fresh()->status);
         $this->assertNotNull($h->fresh()->completed_at);
         foreach (['Tabungan baru', 'Pembayaran menunggu verifikasi', 'Tabungan anggota lunas', 'Pengajuan serah terima baru', 'Serah terima dijadwalkan', 'Serah terima selesai'] as $title) {

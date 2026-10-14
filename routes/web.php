@@ -39,5 +39,7 @@ Route::middleware(['auth', 'active'])->group(function () {
     Route::post('/notifikasi/{notification}/baca', [PortalController::class, 'read'])->name('notifications.read');
     Route::get('/profil', [PortalController::class, 'profile'])->name('profile');
     Route::put('/profil', [PortalController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/tabungan/{saving}/penyerahan/terima', [PortalController::class, 'receiveHandover'])->name('handovers.receive');
+    Route::put('/tabungan/{saving}/penyerahan', [PortalController::class, 'updateHandover'])->name('handovers.update');
     Route::post('/tabungan/{saving}/penyerahan', [PortalController::class, 'handover'])->name('handovers.request');
 });

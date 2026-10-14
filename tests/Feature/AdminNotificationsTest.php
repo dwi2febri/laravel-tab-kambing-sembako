@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Pages\AdminNotifications;
 use App\Filament\Resources\Handovers\HandoverResource;
 use App\Livewire\AdminNotificationBell;
+use App\Models\ChatConversation;
 use App\Models\Handover;
 use App\Models\Payment;
 use App\Models\User;
@@ -72,6 +73,29 @@ class AdminNotificationsTest extends TestCase
         $popup->call('markAllRead')->assertViewHas('actionCount', 3);
         $payments->first()->update(['status' => 'approved']);
         $popup->call('$refresh')->assertViewHas('actionCount', 2);
+    }
+
+    public function test_polling_updates_bell_and_dispatches_sidebar_refresh_when_queues_change(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        $bell = Livewire::test(AdminNotificationBell::class)->assertViewHas('actionCount', 0);
+        $payment = Payment::factory()->create(['status' => 'pending']);
+        $handover = Handover::factory()->create(['status' => 'requested']);
+        $conversation = ChatConversation::create(['user_id' => User::factory()->create()->id]);
+        $message = $conversation->messages()->create(['is_admin' => false, 'body' => 'Pesan baru']);
+        $bell->call('syncNotifications')->assertViewHas('actionCount', 3)->assertDispatched('refresh-sidebar');
+        $payment->update(['status' => 'approved']);
+        $handover->update(['status' => 'completed']);
+        $message->forceFill(['read_at' => now()])->save();
+        $bell->call('syncNotifications')->assertViewHas('actionCount', 0)->assertDispatched('refresh-sidebar');
+    }
+
+    public function test_unchanged_counts_do_not_refresh_sidebar_and_sync_is_admin_only(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Livewire::test(AdminNotificationBell::class)->call('syncNotifications')->assertNotDispatched('refresh-sidebar');
+        $this->actingAs(User::factory()->create());
+        Livewire::test(AdminNotificationBell::class)->assertForbidden();
     }
 
     public function test_handover_badge_counts_only_unfinished_records(): void

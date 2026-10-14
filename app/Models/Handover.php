@@ -19,6 +19,6 @@ class Handover extends Model
 
     protected function casts(): array
     {
-        return ['requested_at' => 'datetime', 'scheduled_at' => 'datetime', 'completed_at' => 'datetime'];
+        return ['preferred_at' => 'datetime', 'requested_at' => 'datetime', 'scheduled_at' => 'datetime', 'completed_at' => 'datetime'];
     }
 }

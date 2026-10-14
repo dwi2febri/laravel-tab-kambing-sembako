@@ -48,7 +48,7 @@ class UserSavingResource extends AdminResource
     {
         return $table->columns([TextColumn::make('row_number')->label('NO')->rowIndex()->alignCenter()->width('4rem'),
             TextColumn::make('user.name')->label('Anggota')->searchable(), TextColumn::make('product_name_snapshot')->label('Produk')->searchable(), TextColumn::make('tenor_snapshot')->label('Bulan'), TextColumn::make('product_price_snapshot')->label('Target')->money('IDR'), TextColumn::make('total_paid')->label('Terkumpul')->money('IDR'), TextColumn::make('remaining_amount')->label('Sisa')->money('IDR'), TextColumn::make('status')->badge(), TextColumn::make('created_at')->label('Dimulai')->date(),
-        ])->filters([SelectFilter::make('status')->options(['active' => 'Aktif', 'paid' => 'Lunas', 'handover_requested' => 'Pengajuan penyerahan', 'handover_scheduled' => 'Terjadwal', 'completed' => 'Selesai'])])->recordActions([ViewAction::make()->label('Detail')])->defaultSort('id', 'desc');
+        ])->filters([SelectFilter::make('status')->options(['active' => 'Aktif', 'paid' => 'Lunas', 'handover_requested' => 'Pengajuan penyerahan', 'handover_scheduled' => 'Proses Penyerahan', 'completed' => 'Selesai'])])->recordActions([ViewAction::make()->label('Detail')])->defaultSort('id', 'desc');
     }
 
     public static function getPages(): array

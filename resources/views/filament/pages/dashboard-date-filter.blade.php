@@ -1,4 +1,4 @@
-<x-filament::section heading="Filter tanggal" description="Pilih periode data yang ingin ditampilkan pada dasbor.">
+<div class="crm-dashboard-filter">
     <form wire:submit="applyDates" class="dashboard-date-filter">
         <div>
             <label for="dashboard-date-from">Dari tanggal</label>
@@ -20,5 +20,5 @@
         </div>
     </form>
     <p class="dashboard-date-caption">Periode aktif: {{ $this->filters['from'] ?? 'Awal data' }} sampai {{ $this->filters['to'] ?? 'Akhir data' }}.</p>
-    <p class="dashboard-date-caption">Anggota dan tabungan berdasarkan tanggal dibuat; pemasukan berdasarkan tanggal verifikasi; serah terima berdasarkan tanggal selesai.</p>
-</x-filament::section>
+    <p class="dashboard-date-caption crm-filter-help">Anggota dan tabungan berdasarkan tanggal dibuat; pemasukan berdasarkan tanggal verifikasi; serah terima berdasarkan tanggal selesai.</p>
+</div>

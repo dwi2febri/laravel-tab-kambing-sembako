@@ -14,7 +14,7 @@ class SavingsStatusChart extends ChartWidget
 
     protected static bool $isLazy = false;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 1;
 
     protected ?string $heading = 'Status Tabungan';
 
@@ -29,7 +29,7 @@ class SavingsStatusChart extends ChartWidget
         $counts = $this->filterDates(UserSaving::query())->selectRaw('status, COUNT(*) as total')->groupBy('status')->pluck('total', 'status');
         $statuses = ['active', 'paid', 'handover_requested', 'handover_scheduled', 'completed'];
 
-        return ['labels' => ['Aktif', 'Lunas', 'Pengajuan Penyerahan', 'Terjadwal', 'Selesai'], 'datasets' => [[
+        return ['labels' => ['Aktif', 'Lunas', 'Pengajuan Penyerahan', 'Proses Penyerahan', 'Selesai'], 'datasets' => [[
             'label' => 'Tabungan',
             'data' => array_map(fn (string $status): int => (int) ($counts[$status] ?? 0), $statuses),
             'backgroundColor' => ['#087f52', '#7eb478', '#e7b34b', '#72a8ad', '#245742'],

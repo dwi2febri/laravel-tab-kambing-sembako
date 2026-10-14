@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\HandoverRequest;
 use App\Http\Requests\PaymentUploadRequest;
+use App\Http\Requests\ReceiveHandoverRequest;
 use App\Http\Requests\StartSavingRequest;
 use App\Models\Installment;
 use App\Models\MemberNotification;
@@ -105,7 +107,7 @@ class PortalController extends Controller
 
     public function notifications(Request $request): View
     {
-        return view('notifications', ['notifications' => $request->user()->memberNotifications()->latest()->paginate(15)]);
+        return view('notifications', ['notifications' => $request->user()->memberNotifications()->latest()->orderByDesc('id')->paginate(5)]);
     }
 
     public function read(Request $request, MemberNotification $notification): RedirectResponse
@@ -129,12 +131,26 @@ class PortalController extends Controller
         return back()->with('success', 'Profil berhasil disimpan.');
     }
 
-    public function handover(Request $request, UserSaving $saving, HandoverService $service): RedirectResponse
+    public function handover(HandoverRequest $request, UserSaving $saving, HandoverService $service): RedirectResponse
     {
-        $data = $request->validate(['recipient_name' => 'required|string|max:100', 'note' => 'nullable|string|max:1000']);
-        $service->request($request->user(), $saving, $data['recipient_name'], $data['note'] ?? null);
+        $data = $request->validated();
+        $service->request($request->user(), $saving, $data['recipient_name'], $data['note'] ?? null, $data);
 
-        return back()->with('success','Pengajuan serah terima dikirim. Admin akan mengatur jadwal.');
+        return back()->with('success', 'Pengajuan jadwal dan lokasi serah terima dikirim. Menunggu konfirmasi admin.');
+    }
+
+    public function updateHandover(HandoverRequest $request, UserSaving $saving, HandoverService $service): RedirectResponse
+    {
+        $service->update($request->user(), $saving, $request->validated());
+
+        return redirect()->route('savings.show', $saving)->with('success', 'Pengajuan serah terima berhasil diperbarui.');
+    }
+
+    public function receiveHandover(ReceiveHandoverRequest $request, UserSaving $saving, HandoverService $service): RedirectResponse
+    {
+        $service->complete($request->user(), $saving->handover()->firstOrFail());
+
+        return redirect()->route('savings.show', $saving)->with('success', 'Terima kasih. Penerimaan produk berhasil dikonfirmasi dan serah terima selesai.');
     }
 
     public function terms(): View

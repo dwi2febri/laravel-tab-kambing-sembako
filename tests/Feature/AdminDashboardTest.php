@@ -7,6 +7,7 @@ use App\Filament\Widgets\CompletedHandovers;
 use App\Filament\Widgets\IncomeChart;
 use App\Filament\Widgets\PaymentStatusChart;
 use App\Filament\Widgets\PendingPayments;
+use App\Filament\Widgets\PopularProductsChart;
 use App\Filament\Widgets\SavingsStatusChart;
 use App\Models\Handover;
 use App\Models\Payment;
@@ -32,6 +33,8 @@ class AdminDashboardTest extends TestCase
     public function test_dashboard_renders_charts_and_payment_queue_even_without_data(): void
     {
         $this->get('/admin')->assertOk()
+            ->assertSee('Dashboard')
+            ->assertSee('Produk Paling Diminati')
             ->assertSee('Ringkasan Operasional')
             ->assertSee('Tren Pemasukan')
             ->assertSee('Status Pembayaran')
@@ -120,6 +123,17 @@ class AdminDashboardTest extends TestCase
             ->assertSet('filters.from', '2026-10-01')
             ->call('resetDates')->assertSet('filters', [])
             ->assertSet('dateFrom', null)->assertSet('dateTo', null);
+    }
+
+    public function test_popular_products_counts_only_savings_in_selected_period(): void
+    {
+        $saving = UserSaving::factory()->create(['product_name_snapshot' => 'Kambing pilihan', 'created_at' => '2026-10-10 12:00:00']);
+        UserSaving::factory()->create(['product_id' => $saving->product_id, 'product_name_snapshot' => 'Kambing pilihan', 'created_at' => '2026-10-10 23:59:59']);
+        UserSaving::factory()->create(['product_name_snapshot' => 'Di luar periode', 'created_at' => '2026-10-09 12:00:00']);
+        $widget = Livewire::test(PopularProductsChart::class, ['pageFilters' => ['from' => '2026-10-10', 'to' => '2026-10-10']])->instance();
+        $data = (new ReflectionMethod(PopularProductsChart::class, 'getData'))->invoke($widget);
+        $this->assertSame(['Kambing pilihan'], $data['labels']);
+        $this->assertSame([2], $data['datasets'][0]['data']);
     }
 
     /**
