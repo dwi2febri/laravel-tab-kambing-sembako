@@ -1,4 +1,4 @@
-<div wire:poll.2s="syncNotifications" x-on:focus.window="$wire.syncNotifications()" x-on:visibilitychange.document="if (!document.hidden) $wire.syncNotifications()">
+<div wire:poll.2s="syncNotifications">
     <x-filament::modal id="admin-notification-popup" width="2xl" teleport="body" sticky-header>
         <x-slot name="trigger">
             <button type="button" class="admin-notification-bell" aria-label="Notifikasi, {{ $actionCount }} perlu ditindaklanjuti, {{ $unreadCount }} riwayat belum dibaca" title="Notifikasi">
